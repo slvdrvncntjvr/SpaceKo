@@ -3,16 +3,19 @@ import { ArrowLeft, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResourceCard } from "./ResourceCard";
-import { Resource, Wing } from "@shared/schema";
+import { Resource, Wing, UserType } from "@shared/schema";
 
 interface FloorViewProps {
   wing: Wing;
   resources: Resource[];
   onBack: () => void;
   onReport: (resource: Resource) => void;
+  userType: UserType;
+  userCode: string;
+  onVerify: (resource: Resource) => void;
 }
 
-export function FloorView({ wing, resources, onBack, onReport }: FloorViewProps) {
+export function FloorView({ wing, resources, onBack, onReport, userType, userCode, onVerify }: FloorViewProps) {
   // Group resources by floor
   const resourcesByFloor = resources.reduce((acc, resource) => {
     const floor = resource.floor || 0;
@@ -78,6 +81,9 @@ export function FloorView({ wing, resources, onBack, onReport }: FloorViewProps)
                     key={resource.id}
                     resource={resource}
                     onReport={onReport}
+                    userType={userType}
+                    userCode={userCode}
+                    onVerify={onVerify}
                   />
                 ))}
               </div>

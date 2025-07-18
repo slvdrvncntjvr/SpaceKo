@@ -16,6 +16,7 @@ export const resources = pgTable("resources", {
   verifiedBy: text("verified_by"), // admin who verified this status
   verifiedAt: timestamp("verified_at"), // when it was verified
   ownedBy: text("owned_by"), // for lagoon stalls and services - the employee who owns it
+  stallNumber: integer("stall_number"), // for lagoon stalls: 1-50
 });
 
 export const users = pgTable("users", {

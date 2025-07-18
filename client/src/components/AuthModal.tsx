@@ -118,28 +118,8 @@ export function AuthModal({ isOpen, onAuthenticate }: AuthModalProps) {
         <div className="space-y-6">
           <div className="text-center">
             <p className="text-gray-600 text-sm">
-              Enter your PUP access code to start reporting and viewing campus resources
+              Enter your authorized access code to continue
             </p>
-          </div>
-
-          {/* Code Types Guide */}
-          <div className="space-y-3">
-            <h3 className="font-medium text-gray-900 text-sm">Access Code Types:</h3>
-            <div className="grid gap-2">
-              {codeTypes.map((codeType) => {
-                const Icon = codeType.icon;
-                return (
-                  <div key={codeType.type} className={`p-3 rounded-lg border ${codeType.color}`}>
-                    <div className="flex items-center space-x-2">
-                      <Icon className="h-4 w-4" />
-                      <span className="font-medium text-sm">{codeType.title}</span>
-                    </div>
-                    <p className="text-xs mt-1">{codeType.description}</p>
-                    <p className="text-xs text-gray-500 mt-1">Example: {codeType.example}</p>
-                  </div>
-                );
-              })}
-            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">

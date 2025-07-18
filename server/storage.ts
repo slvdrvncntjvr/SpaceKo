@@ -86,7 +86,8 @@ export class MemStorage implements IStorage {
       updatedBy: insertResource.updatedBy || null,
       verifiedBy: insertResource.verifiedBy || null,
       verifiedAt: null,
-      ownedBy: insertResource.ownedBy || null
+      ownedBy: insertResource.ownedBy || null,
+      stallNumber: insertResource.stallNumber || null
     };
     this.resources.set(id, resource);
     return resource;

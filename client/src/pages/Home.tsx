@@ -100,8 +100,18 @@ export default function Home() {
     setResources(prev => 
       prev.map(resource => 
         resource.name === resourceName 
-          ? { ...resource, status, lastUpdated: new Date(), updatedBy: username }
+          ? { ...resource, status, lastUpdated: new Date(), updatedBy: userCode }
           : resource
+      )
+    );
+  };
+
+  const handleVerifyResource = (resource: Resource) => {
+    setResources(prev => 
+      prev.map(r => 
+        r.id === resource.id 
+          ? { ...r, verifiedBy: userCode, verifiedAt: new Date() }
+          : r
       )
     );
   };
@@ -159,6 +169,9 @@ export default function Home() {
                 resources={filteredResources}
                 onBack={handleBackToWings}
                 onReport={handleReport}
+                userType={userType}
+                userCode={userCode}
+                onVerify={handleVerifyResource}
               />
             )}
 
@@ -169,6 +182,9 @@ export default function Home() {
                     key={resource.id}
                     resource={resource}
                     onReport={handleReport}
+                    userType={userType}
+                    userCode={userCode}
+                    onVerify={handleVerifyResource}
                   />
                 ))}
               </div>
@@ -278,6 +294,9 @@ export default function Home() {
         resources={resources}
         selectedResource={selectedResource}
         onSubmit={handleReportSubmit}
+        userType={userType}
+        userCode={userCode}
+        username={username}
       />
 
       {/* SuperAdmin Modal */}

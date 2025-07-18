@@ -32,6 +32,11 @@ export const generateRoomResources = (): Resource[] => {
         const minutesAgo = Math.floor(Math.random() * 30) + 1;
         const lastUpdated = new Date(Date.now() - minutesAgo * 60 * 1000);
         
+        // Assign ownership for some office rooms to demonstrate access control
+        const isOffice = type === "Faculty Office";
+        const ownedBy = isOffice && Math.random() > 0.7 ? `OFF${Math.floor(Math.random() * 50) + 1}` : null;
+        const hasVerification = Math.random() > 0.8;
+        
         resources.push({
           id,
           name,
@@ -42,10 +47,11 @@ export const generateRoomResources = (): Resource[] => {
           room: roomCode,
           status,
           lastUpdated,
-          updatedBy: Math.random() > 0.5 ? `user${Math.floor(Math.random() * 100)}` : null,
-          verifiedBy: null,
-          verifiedAt: null,
-          ownedBy: null
+          updatedBy: Math.random() > 0.5 ? `STU${Math.floor(Math.random() * 1000) + 1}` : null,
+          verifiedBy: hasVerification ? `ADM001` : null,
+          verifiedAt: hasVerification ? new Date(Date.now() - Math.floor(Math.random() * 24 * 60 * 60 * 1000)) : null,
+          ownedBy,
+          stallNumber: null
         });
         
         id++;
@@ -82,42 +88,48 @@ export const generateHallResources = (): Resource[] => {
     updatedBy: Math.random() > 0.5 ? `admin${Math.floor(Math.random() * 10)}` : null,
     verifiedBy: null,
     verifiedAt: null,
-    ownedBy: null
+    ownedBy: null,
+    stallNumber: null
   }));
 };
 
-// Generate lagoon stall resources
+// Generate lagoon stall resources (50 stalls)
 export const generateLagoonStalls = (): Resource[] => {
-  const stalls = [
-    { name: "Mama's Kitchen", type: "Food Stall", owner: "LAG01-1001" },
-    { name: "Coffee Corner", type: "Beverage Stand", owner: "LAG01-1002" },
-    { name: "Quick Bites", type: "Snack Bar", owner: "LAG01-1003" },
-    { name: "Fresh Fruits", type: "Fruit Stand", owner: "LAG01-1004" },
-    { name: "Study Supplies", type: "School Store", owner: "LAG01-1005" },
-    { name: "Copy Center", type: "Printing Shop", owner: "LAG01-1006" },
-    { name: "Mobile Repair", type: "Tech Service", owner: "LAG01-1007" },
-    { name: "Barber Shop", type: "Personal Care", owner: "LAG01-1008" },
-    { name: "Mini Grocery", type: "Convenience Store", owner: "LAG01-1009" },
-    { name: "Uniform Shop", type: "Clothing Store", owner: "LAG01-1010" },
-    { name: "Book Exchange", type: "Bookstore", owner: "LAG01-1011" },
-    { name: "Art Supplies", type: "Craft Store", owner: "LAG01-1012" }
+  const stallTypes = ["Food Stall", "Beverage Stand", "Snack Bar", "Convenience Store", "School Store", "Printing Shop", "Tech Service", "Personal Care", "Clothing Store", "Bookstore"];
+  const stallNames = [
+    "Mama's Kitchen", "Coffee Corner", "Quick Bites", "Fresh Fruits", "Study Supplies",
+    "Copy Center", "Mobile Repair", "Barber Shop", "Mini Grocery", "Uniform Shop",
+    "Book Exchange", "Art Supplies", "Tea House", "Burger Hub", "Noodle Station",
+    "Juice Bar", "Sandwich Shop", "Rice Meals", "Pastry Corner", "Ice Cream Stand",
+    "Gadget Repair", "Phone Accessories", "Stationery Plus", "Print Express", "Laundry Service",
+    "Shoe Repair", "Watch Service", "Eyeglass Shop", "Pharmacy", "Medical Supplies",
+    "Fitness Gear", "Sports Equipment", "Music Store", "Guitar Shop", "Art Gallery",
+    "Photo Studio", "Travel Agency", "Courier Service", "Money Exchange", "Loading Station",
+    "Internet Cafe", "Gaming Lounge", "Tutoring Center", "Language School", "Dance Studio",
+    "Yoga Corner", "Massage Therapy", "Beauty Salon", "Nail Spa", "Wellness Center"
   ];
 
-  return stalls.map((stall, index) => ({
-    id: 2000 + index,
-    name: stall.name,
-    type: stall.type,
-    category: "lagoon_stall" as Category,
-    wing: null,
-    floor: null,
-    room: null,
-    status: Math.random() > 0.4 ? "open" : "closed" as Status,
-    lastUpdated: new Date(Date.now() - Math.floor(Math.random() * 120) * 60 * 1000),
-    updatedBy: stall.owner,
-    verifiedBy: null,
-    verifiedAt: null,
-    ownedBy: stall.owner
-  }));
+  return Array.from({ length: 50 }, (_, index) => {
+    const stallNumber = index + 1;
+    const ownerCode = `LAG${String(Math.floor(stallNumber / 10) + 1).padStart(2, '0')}-${String(stallNumber).padStart(4, '0')}`;
+    
+    return {
+      id: 2000 + index,
+      name: `Stall ${stallNumber} - ${stallNames[index]}`,
+      type: stallTypes[index % stallTypes.length],
+      category: "lagoon_stall" as Category,
+      wing: null,
+      floor: null,
+      room: null,
+      status: Math.random() > 0.4 ? "open" : "closed" as Status,
+      lastUpdated: new Date(Date.now() - Math.floor(Math.random() * 120) * 60 * 1000),
+      updatedBy: ownerCode,
+      verifiedBy: null,
+      verifiedAt: null,
+      ownedBy: ownerCode,
+      stallNumber: stallNumber
+    };
+  });
 };
 
 // Generate service offices
@@ -137,21 +149,27 @@ export const generateServiceOffices = (): Resource[] => {
     { name: "Alumni Office", type: "Administrative Service", owner: "OFC01-2012" }
   ];
 
-  return services.map((service, index) => ({
-    id: 3000 + index,
-    name: service.name,
-    type: service.type,
-    category: "service" as Category,
-    wing: null,
-    floor: null,
-    room: null,
-    status: Math.random() > 0.3 ? "open" : "closed" as Status,
-    lastUpdated: new Date(Date.now() - Math.floor(Math.random() * 60) * 60 * 1000),
-    updatedBy: service.owner,
-    verifiedBy: null,
-    verifiedAt: null,
-    ownedBy: service.owner
-  }));
+  return services.map((service, index) => {
+    const hasVerification = Math.random() > 0.6;
+    const minutesAgo = Math.floor(Math.random() * 240) + 1;
+    
+    return {
+      id: 3000 + index,
+      name: service.name,
+      type: service.type,
+      category: "service" as Category,
+      wing: null,
+      floor: null,
+      room: null,
+      status: Math.random() > 0.3 ? "open" : "closed" as Status,
+      lastUpdated: new Date(Date.now() - minutesAgo * 60 * 1000),
+      updatedBy: service.owner,
+      verifiedBy: hasVerification ? "ADM001" : null,
+      verifiedAt: hasVerification ? new Date(Date.now() - Math.floor(Math.random() * 12 * 60 * 60 * 1000)) : null,
+      ownedBy: service.owner,
+      stallNumber: null
+    };
+  });
 };
 
 export const mockContributors: Contributor[] = [
