@@ -42,7 +42,10 @@ export const generateRoomResources = (): Resource[] => {
           room: roomCode,
           status,
           lastUpdated,
-          updatedBy: Math.random() > 0.5 ? `user${Math.floor(Math.random() * 100)}` : null
+          updatedBy: Math.random() > 0.5 ? `user${Math.floor(Math.random() * 100)}` : null,
+          verifiedBy: null,
+          verifiedAt: null,
+          ownedBy: null
         });
         
         id++;
@@ -76,25 +79,28 @@ export const generateHallResources = (): Resource[] => {
     room: null,
     status: Math.random() > 0.2 ? "available" : "occupied" as Status,
     lastUpdated: new Date(Date.now() - Math.floor(Math.random() * 60) * 60 * 1000),
-    updatedBy: Math.random() > 0.5 ? `admin${Math.floor(Math.random() * 10)}` : null
+    updatedBy: Math.random() > 0.5 ? `admin${Math.floor(Math.random() * 10)}` : null,
+    verifiedBy: null,
+    verifiedAt: null,
+    ownedBy: null
   }));
 };
 
 // Generate lagoon stall resources
 export const generateLagoonStalls = (): Resource[] => {
   const stalls = [
-    { name: "Mama's Kitchen", type: "Food Stall" },
-    { name: "Coffee Corner", type: "Beverage Stand" },
-    { name: "Quick Bites", type: "Snack Bar" },
-    { name: "Fresh Fruits", type: "Fruit Stand" },
-    { name: "Study Supplies", type: "School Store" },
-    { name: "Copy Center", type: "Printing Shop" },
-    { name: "Mobile Repair", type: "Tech Service" },
-    { name: "Barber Shop", type: "Personal Care" },
-    { name: "Mini Grocery", type: "Convenience Store" },
-    { name: "Uniform Shop", type: "Clothing Store" },
-    { name: "Book Exchange", type: "Bookstore" },
-    { name: "Art Supplies", type: "Craft Store" }
+    { name: "Mama's Kitchen", type: "Food Stall", owner: "LAG01-1001" },
+    { name: "Coffee Corner", type: "Beverage Stand", owner: "LAG01-1002" },
+    { name: "Quick Bites", type: "Snack Bar", owner: "LAG01-1003" },
+    { name: "Fresh Fruits", type: "Fruit Stand", owner: "LAG01-1004" },
+    { name: "Study Supplies", type: "School Store", owner: "LAG01-1005" },
+    { name: "Copy Center", type: "Printing Shop", owner: "LAG01-1006" },
+    { name: "Mobile Repair", type: "Tech Service", owner: "LAG01-1007" },
+    { name: "Barber Shop", type: "Personal Care", owner: "LAG01-1008" },
+    { name: "Mini Grocery", type: "Convenience Store", owner: "LAG01-1009" },
+    { name: "Uniform Shop", type: "Clothing Store", owner: "LAG01-1010" },
+    { name: "Book Exchange", type: "Bookstore", owner: "LAG01-1011" },
+    { name: "Art Supplies", type: "Craft Store", owner: "LAG01-1012" }
   ];
 
   return stalls.map((stall, index) => ({
@@ -107,7 +113,44 @@ export const generateLagoonStalls = (): Resource[] => {
     room: null,
     status: Math.random() > 0.4 ? "open" : "closed" as Status,
     lastUpdated: new Date(Date.now() - Math.floor(Math.random() * 120) * 60 * 1000),
-    updatedBy: Math.random() > 0.3 ? `emp${Math.floor(Math.random() * 20)}` : null
+    updatedBy: stall.owner,
+    verifiedBy: null,
+    verifiedAt: null,
+    ownedBy: stall.owner
+  }));
+};
+
+// Generate service offices
+export const generateServiceOffices = (): Resource[] => {
+  const services = [
+    { name: "Registrar Office", type: "Academic Service", owner: "OFC01-2001" },
+    { name: "Bursar Office", type: "Financial Service", owner: "OFC01-2002" },
+    { name: "Medical Clinic", type: "Health Service", owner: "OFC01-2003" },
+    { name: "Dental Clinic", type: "Health Service", owner: "OFC01-2004" },
+    { name: "Guidance Office", type: "Student Service", owner: "OFC01-2005" },
+    { name: "Library Services", type: "Academic Service", owner: "OFC01-2006" },
+    { name: "IT Support", type: "Technical Service", owner: "OFC01-2007" },
+    { name: "Security Office", type: "Safety Service", owner: "OFC01-2008" },
+    { name: "Admission Office", type: "Academic Service", owner: "OFC01-2009" },
+    { name: "Student Affairs", type: "Student Service", owner: "OFC01-2010" },
+    { name: "Scholarship Office", type: "Financial Service", owner: "OFC01-2011" },
+    { name: "Alumni Office", type: "Administrative Service", owner: "OFC01-2012" }
+  ];
+
+  return services.map((service, index) => ({
+    id: 3000 + index,
+    name: service.name,
+    type: service.type,
+    category: "service" as Category,
+    wing: null,
+    floor: null,
+    room: null,
+    status: Math.random() > 0.3 ? "open" : "closed" as Status,
+    lastUpdated: new Date(Date.now() - Math.floor(Math.random() * 60) * 60 * 1000),
+    updatedBy: service.owner,
+    verifiedBy: null,
+    verifiedAt: null,
+    ownedBy: service.owner
   }));
 };
 
@@ -146,9 +189,30 @@ export const mockContributors: Contributor[] = [
   }
 ];
 
+// Mock users for testing
+export const mockUsers = [
+  {
+    id: 1,
+    userCode: "SUPER-ADMIN",
+    username: "SuperAdmin",
+    userType: "superadmin" as UserType,
+    isActive: true,
+    createdAt: new Date(),
+    createdBy: null,
+    studentId: null,
+    grade: null,
+    section: null,
+    office: null,
+    position: null,
+    workplace: null,
+    employeeId: null
+  }
+];
+
 // Combine all resources
 export const mockResources = [
   ...generateRoomResources(),
   ...generateHallResources(), 
-  ...generateLagoonStalls()
+  ...generateLagoonStalls(),
+  ...generateServiceOffices()
 ];

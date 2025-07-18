@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ShieldCheck, UserCheck, Users, Briefcase } from "lucide-react";
+import { ShieldCheck, UserCheck, Users, Briefcase, Crown, Store, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -19,9 +19,11 @@ export function AuthModal({ isOpen, onAuthenticate }: AuthModalProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const getUserType = (code: string): UserType | null => {
+    if (code === "SUPER-ADMIN") return "superadmin";
     if (/^20\d{2}-\d{4}$/.test(code)) return "student";
     if (/^PUP\d{2}-\d{4}$/.test(code)) return "admin";
-    if (/^EMP\d{2}-\d{4}$/.test(code)) return "employee";
+    if (/^LAG\d{2}-\d{4}$/.test(code)) return "lagoon_employee";
+    if (/^OFC\d{2}-\d{4}$/.test(code)) return "office_employee";
     return null;
   };
 
@@ -52,13 +54,23 @@ export function AuthModal({ isOpen, onAuthenticate }: AuthModalProps) {
 
   const getCodeExample = (type: UserType) => {
     switch (type) {
+      case "superadmin": return "SUPER-ADMIN";
       case "student": return "2024-1234";
       case "admin": return "PUP01-5678";
-      case "employee": return "EMP01-9999";
+      case "lagoon_employee": return "LAG01-1001";
+      case "office_employee": return "OFC01-2001";
     }
   };
 
   const codeTypes = [
+    {
+      type: "superadmin" as UserType,
+      icon: Crown,
+      title: "SuperAdmin",
+      description: "Special access code",
+      example: getCodeExample("superadmin"),
+      color: "text-maroon bg-red-100 border-maroon"
+    },
     {
       type: "student" as UserType,
       icon: Users,
@@ -73,15 +85,23 @@ export function AuthModal({ isOpen, onAuthenticate }: AuthModalProps) {
       title: "Admin",
       description: "Format: PUPXX-XXXX",
       example: getCodeExample("admin"),
-      color: "text-maroon bg-red-50"
+      color: "text-red-700 bg-red-50"
     },
     {
-      type: "employee" as UserType,
-      icon: Briefcase,
-      title: "Employee",
-      description: "Format: EMPXX-XXXX",
-      example: getCodeExample("employee"),
+      type: "lagoon_employee" as UserType,
+      icon: Store,
+      title: "Lagoon Staff",
+      description: "Format: LAGXX-XXXX",
+      example: getCodeExample("lagoon_employee"),
       color: "text-green-600 bg-green-50"
+    },
+    {
+      type: "office_employee" as UserType,
+      icon: Building,
+      title: "Office Staff",
+      description: "Format: OFCXX-XXXX",
+      example: getCodeExample("office_employee"),
+      color: "text-purple-600 bg-purple-50"
     }
   ];
 

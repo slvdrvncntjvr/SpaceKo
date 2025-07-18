@@ -1,5 +1,5 @@
 import React from "react";
-import { Building2, School, Store } from "lucide-react";
+import { Building2, School, Store, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Category } from "@shared/schema";
 
@@ -27,6 +27,12 @@ export function CategoryTabs({ selectedCategory, onCategoryChange }: CategoryTab
       label: "Lagoon",
       icon: Store,
       description: "Food Stalls & Services"
+    },
+    {
+      id: "service" as Category,
+      label: "Services",
+      icon: Settings,
+      description: "Offices & Administrative Services"
     }
   ];
 
