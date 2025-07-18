@@ -1,16 +1,15 @@
 import { useState } from "react";
-import { MapPin, Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import spaceKoLogo from "@assets/image_1752838811529.png";
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
     { name: "Home", href: "#", active: true },
-    { name: "About", href: "#", active: false },
-    { name: "Report", href: "#", active: false },
-    { name: "Map", href: "#", active: false }
+    { name: "Campus Map", href: "#", active: false }
   ];
 
   return (
@@ -19,9 +18,12 @@ export function Header() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
-              <MapPin className="text-maroon text-2xl mr-3 h-8 w-8" />
+              <img 
+                src={spaceKoLogo} 
+                alt="SpaceKo Logo" 
+                className="h-10 w-auto mr-2" 
+              />
               <div>
-                <h1 className="text-2xl font-bold text-maroon">SpaceKo</h1>
                 <p className="text-xs text-gray-600 hidden sm:block">
                   Empowering PUPians with Real-Time Space Visibility
                 </p>

@@ -34,7 +34,7 @@ export const generateRoomResources = (): Resource[] => {
         
         // Assign ownership for some office rooms to demonstrate access control
         const isOffice = type === "Faculty Office";
-        const ownedBy = isOffice && Math.random() > 0.7 ? `OFF${Math.floor(Math.random() * 50) + 1}` : null;
+        const ownedBy = isOffice && Math.random() > 0.7 ? `OFC01-${Math.floor(Math.random() * 50) + 2050}` : null;
         const hasVerification = Math.random() > 0.8;
         
         resources.push({
@@ -111,7 +111,15 @@ export const generateLagoonStalls = (): Resource[] => {
 
   return Array.from({ length: 50 }, (_, index) => {
     const stallNumber = index + 1;
-    const ownerCode = `LAG${String(Math.floor(stallNumber / 10) + 1).padStart(2, '0')}-${String(stallNumber).padStart(4, '0')}`;
+    // Assign ownership based on the valid codes we created
+    const validOwnerCodes = [
+      "LAG01-1001", "LAG01-1002", "LAG01-1003", "LAG01-1004", "LAG01-1005",
+      "LAG01-1010", "LAG01-1015", "LAG01-1020", "LAG01-1025", "LAG01-1030"
+    ];
+    
+    // For stalls 1-10, assign to valid owners; others remain unowned for demo
+    const ownerCode = stallNumber <= 10 ? validOwnerCodes[stallNumber - 1] : null;
+    const hasVerification = ownerCode && Math.random() > 0.7;
     
     return {
       id: 2000 + index,
@@ -123,9 +131,9 @@ export const generateLagoonStalls = (): Resource[] => {
       room: null,
       status: Math.random() > 0.4 ? "open" : "closed" as Status,
       lastUpdated: new Date(Date.now() - Math.floor(Math.random() * 120) * 60 * 1000),
-      updatedBy: ownerCode,
-      verifiedBy: null,
-      verifiedAt: null,
+      updatedBy: ownerCode || "SYSTEM",
+      verifiedBy: hasVerification ? "PUP01-9001" : null,
+      verifiedAt: hasVerification ? new Date(Date.now() - Math.floor(Math.random() * 48 * 60 * 60 * 1000)) : null,
       ownedBy: ownerCode,
       stallNumber: stallNumber
     };
@@ -144,9 +152,7 @@ export const generateServiceOffices = (): Resource[] => {
     { name: "IT Support", type: "Technical Service", owner: "OFC01-2007" },
     { name: "Security Office", type: "Safety Service", owner: "OFC01-2008" },
     { name: "Admission Office", type: "Academic Service", owner: "OFC01-2009" },
-    { name: "Student Affairs", type: "Student Service", owner: "OFC01-2010" },
-    { name: "Scholarship Office", type: "Financial Service", owner: "OFC01-2011" },
-    { name: "Alumni Office", type: "Administrative Service", owner: "OFC01-2012" }
+    { name: "Student Affairs", type: "Student Service", owner: "OFC01-2010" }
   ];
 
   return services.map((service, index) => {
@@ -175,30 +181,46 @@ export const generateServiceOffices = (): Resource[] => {
 export const mockContributors: Contributor[] = [
   {
     id: 1,
-    username: "JuanDLC",
-    userCode: "2023-1234",
+    username: "Juan Dela Cruz",
+    userCode: "2024-1001",
     userType: "student",
-    updateCount: 8,
-    lastActive: new Date(Date.now() - 10 * 60 * 1000)
+    updateCount: 15,
+    lastActive: new Date(Date.now() - 8 * 60 * 1000)
   },
   {
     id: 2,
-    username: "Iskolar08", 
-    userCode: "2024-5678",
+    username: "Maria Santos", 
+    userCode: "2024-1002",
     userType: "student",
-    updateCount: 6,
-    lastActive: new Date(Date.now() - 15 * 60 * 1000)
+    updateCount: 12,
+    lastActive: new Date(Date.now() - 12 * 60 * 1000)
   },
   {
     id: 3,
-    username: "AdminMary",
-    userCode: "PUP01-9999",
+    username: "Director Lopez",
+    userCode: "PUP01-9001",
     userType: "admin",
-    updateCount: 12,
-    lastActive: new Date(Date.now() - 5 * 60 * 1000)
+    updateCount: 8,
+    lastActive: new Date(Date.now() - 3 * 60 * 1000)
   },
   {
     id: 4,
+    username: "Aling Rosa",
+    userCode: "LAG01-1001",
+    userType: "lagoon_employee",
+    updateCount: 22,
+    lastActive: new Date(Date.now() - 5 * 60 * 1000)
+  },
+  {
+    id: 5,
+    username: "Ms. Patricia Cruz",
+    userCode: "OFC01-2001",
+    userType: "office_employee",
+    updateCount: 6,
+    lastActive: new Date(Date.now() - 25 * 60 * 1000)
+  },
+  {
+    id: 6,
     username: "TechSupport",
     userCode: "EMP01-1111",
     userType: "employee",

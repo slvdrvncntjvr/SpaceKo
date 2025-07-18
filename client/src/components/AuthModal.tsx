@@ -1,11 +1,13 @@
 import React, { useState } from "react";
-import { ShieldCheck, UserCheck, Users, Briefcase, Crown, Store, Building } from "lucide-react";
+import { ShieldCheck, UserCheck, Users, Briefcase, Crown, Store, Building, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserType } from "@shared/schema";
+import { validateCode, getCodesByUserType } from "@/data/validCodes";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -14,52 +16,38 @@ interface AuthModalProps {
 
 export function AuthModal({ isOpen, onAuthenticate }: AuthModalProps) {
   const [userCode, setUserCode] = useState("");
-  const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
-  const getUserType = (code: string): UserType | null => {
-    if (code === "SUPER-ADMIN") return "superadmin";
-    if (/^20\d{2}-\d{4}$/.test(code)) return "student";
-    if (/^PUP\d{2}-\d{4}$/.test(code)) return "admin";
-    if (/^LAG\d{2}-\d{4}$/.test(code)) return "lagoon_employee";
-    if (/^OFC\d{2}-\d{4}$/.test(code)) return "office_employee";
-    return null;
-  };
+  const [showValidCodes, setShowValidCodes] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
-    if (!userCode.trim() || !username.trim()) {
-      setError("Please enter both code and username");
+    if (!userCode.trim()) {
+      setError("Please enter your access code");
       setIsLoading(false);
       return;
     }
 
-    const userType = getUserType(userCode);
-    if (!userType) {
-      setError("Invalid code format. Please check your code and try again.");
+    const validCodeData = validateCode(userCode);
+    if (!validCodeData) {
+      setError("Invalid access code. Please check your code and try again.");
       setIsLoading(false);
       return;
     }
 
     // Simulate authentication delay
     setTimeout(() => {
-      onAuthenticate(userCode, userType, username);
+      onAuthenticate(userCode, validCodeData.userType, validCodeData.username);
       setIsLoading(false);
     }, 1000);
   };
 
   const getCodeExample = (type: UserType) => {
-    switch (type) {
-      case "superadmin": return "SUPER-ADMIN";
-      case "student": return "2024-1234";
-      case "admin": return "PUP01-5678";
-      case "lagoon_employee": return "LAG01-1001";
-      case "office_employee": return "OFC01-2001";
-    }
+    const codes = getCodesByUserType(type);
+    return codes.length > 0 ? codes[0].code : "No codes available";
   };
 
   const codeTypes = [
@@ -107,70 +95,88 @@ export function AuthModal({ isOpen, onAuthenticate }: AuthModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-maroon flex items-center">
-            <UserCheck className="mr-2 h-6 w-6" />
-            Welcome to SpaceKo
+          <DialogTitle className="flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5 text-maroon" />
+            SpaceKo Authentication
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6">
-          <div className="text-center">
-            <p className="text-gray-600 text-sm">
-              Enter your authorized access code to continue
-            </p>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="userCode">Access Code</Label>
+            <Input
+              id="userCode"
+              type="text"
+              placeholder="Enter your access code"
+              value={userCode}
+              onChange={(e) => setUserCode(e.target.value)}
+              className="font-mono"
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="userCode" className="text-sm font-medium text-gray-700">
-                Access Code
-              </Label>
-              <Input
-                id="userCode"
-                value={userCode}
-                onChange={(e) => setUserCode(e.target.value.toUpperCase())}
-                placeholder="Enter your code (e.g., 2024-1234)"
-                className="mt-1"
-                disabled={isLoading}
-              />
-            </div>
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-            <div>
-              <Label htmlFor="username" className="text-sm font-medium text-gray-700">
-                Display Name
-              </Label>
-              <Input
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your name"
-                className="mt-1"
-                disabled={isLoading}
-              />
-            </div>
+          <Button 
+            type="submit" 
+            className="w-full bg-maroon hover:bg-gold hover:text-maroon"
+            disabled={isLoading}
+          >
+            {isLoading ? "Authenticating..." : "Access SpaceKo"}
+          </Button>
+        </form>
 
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            <Button 
-              type="submit" 
-              className="w-full bg-maroon hover:bg-gold hover:text-maroon text-white transition-colors duration-200"
-              disabled={isLoading}
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm text-gray-600">Valid Access Codes:</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowValidCodes(!showValidCodes)}
+              className="text-xs"
             >
-              {isLoading ? "Authenticating..." : "Enter SpaceKo"}
+              {showValidCodes ? <EyeOff className="h-3 w-3 mr-1" /> : <Eye className="h-3 w-3 mr-1" />}
+              {showValidCodes ? "Hide" : "Show"} Codes
             </Button>
-          </form>
-
-          <div className="text-center">
-            <p className="text-xs text-gray-500">
-              Authentication helps reduce spam and maintain data quality
-            </p>
           </div>
+
+          {showValidCodes && (
+            <div className="space-y-3 max-h-60 overflow-y-auto">
+              {codeTypes.map(({ type, icon: Icon, title, color }) => {
+                const codes = getCodesByUserType(type);
+                return (
+                  <Card key={type} className={`${color} border`}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="flex items-center gap-2 text-sm">
+                        <Icon className="h-4 w-4" />
+                        {title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="grid grid-cols-1 gap-1 text-xs">
+                        {codes.slice(0, 3).map((code) => (
+                          <div key={code.code} className="flex items-center justify-between">
+                            <code className="font-mono bg-white px-2 py-1 rounded">{code.code}</code>
+                            <span className="text-gray-600 ml-2">{code.username}</span>
+                          </div>
+                        ))}
+                        {codes.length > 3 && (
+                          <div className="text-gray-500 text-center">
+                            +{codes.length - 3} more codes available
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
