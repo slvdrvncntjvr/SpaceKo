@@ -1,30 +1,84 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Header } from "@/components/Header";
+import { AuthModal } from "@/components/AuthModal";
+import { CategoryTabs } from "@/components/CategoryTabs";
+import { WingSelector } from "@/components/WingSelector";
+import { FloorView } from "@/components/FloorView";
 import { ResourceCard } from "@/components/ResourceCard";
 import { CampusMap } from "@/components/CampusMap";
 import { CommunitySpotlight } from "@/components/CommunitySpotlight";
 import { ReportModal } from "@/components/ReportModal";
 import { Button } from "@/components/ui/button";
-import { mockResources, mockContributors } from "@/data/mockData";
-import { Resource, Wing, Status } from "@shared/schema";
+import { mockResources, mockContributors } from "@/data/newMockData";
+import { Resource, Wing, Status, Category, UserType } from "@shared/schema";
 
-type Filter = "all" | Wing;
-type StatusFilter = "all" | Status;
+type ViewMode = "category" | "wing" | "floor";
 
 export default function Home() {
+  // Authentication state
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userCode, setUserCode] = useState("");
+  const [userType, setUserType] = useState<UserType>("student");
+  const [username, setUsername] = useState("");
+
+  // App state
   const [resources, setResources] = useState<Resource[]>(mockResources);
-  const [selectedWing, setSelectedWing] = useState<Filter>("all");
-  const [selectedStatus, setSelectedStatus] = useState<StatusFilter>("all");
+  const [selectedCategory, setSelectedCategory] = useState<Category>("room");
+  const [viewMode, setViewMode] = useState<ViewMode>("category");
+  const [selectedWing, setSelectedWing] = useState<Wing>("South");
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [selectedResource, setSelectedResource] = useState<Resource | undefined>();
 
+  // Check for saved authentication
+  useEffect(() => {
+    const savedAuth = localStorage.getItem("spaceko_auth");
+    if (savedAuth) {
+      const auth = JSON.parse(savedAuth);
+      setIsAuthenticated(true);
+      setUserCode(auth.userCode);
+      setUserType(auth.userType);
+      setUsername(auth.username);
+    }
+  }, []);
+
+  const handleAuthenticate = (code: string, type: UserType, name: string) => {
+    setUserCode(code);
+    setUserType(type);
+    setUsername(name);
+    setIsAuthenticated(true);
+    
+    // Save authentication
+    localStorage.setItem("spaceko_auth", JSON.stringify({
+      userCode: code,
+      userType: type,
+      username: name
+    }));
+  };
+
   const filteredResources = useMemo(() => {
-    return resources.filter(resource => {
-      const wingMatch = selectedWing === "all" || resource.wing === selectedWing;
-      const statusMatch = selectedStatus === "all" || resource.status === selectedStatus;
-      return wingMatch && statusMatch;
+    let filtered = resources.filter(resource => resource.category === selectedCategory);
+    
+    if (selectedCategory === "room" && viewMode === "floor") {
+      filtered = filtered.filter(resource => resource.wing === selectedWing);
+    }
+    
+    return filtered;
+  }, [resources, selectedCategory, viewMode, selectedWing]);
+
+  const wingStats = useMemo(() => {
+    const roomResources = resources.filter(r => r.category === "room");
+    const wings: Wing[] = ["North", "South", "East", "West"];
+    
+    return wings.map(wing => {
+      const wingResources = roomResources.filter(r => r.wing === wing);
+      const available = wingResources.filter(r => r.status === "available").length;
+      return {
+        wing,
+        total: wingResources.length,
+        available
+      };
     });
-  }, [resources, selectedWing, selectedStatus]);
+  }, [resources]);
 
   const handleReport = (resource: Resource) => {
     setSelectedResource(resource);
@@ -35,24 +89,33 @@ export default function Home() {
     setResources(prev => 
       prev.map(resource => 
         resource.name === resourceName 
-          ? { ...resource, status, lastUpdated: new Date() }
+          ? { ...resource, status, lastUpdated: new Date(), updatedBy: username }
           : resource
       )
     );
   };
 
-  const wingFilters: { label: string; value: Filter }[] = [
-    { label: "All Wings", value: "all" },
-    { label: "South Wing", value: "South" },
-    { label: "East Wing", value: "East" },
-    { label: "West Wing", value: "West" },
-    { label: "North Wing", value: "North" }
-  ];
+  const handleWingSelect = (wing: Wing) => {
+    setSelectedWing(wing);
+    setViewMode("floor");
+  };
 
-  const statusFilters: { label: string; value: StatusFilter }[] = [
-    { label: "Available", value: "available" },
-    { label: "Occupied", value: "occupied" }
-  ];
+  const handleBackToWings = () => {
+    setViewMode("category");
+  };
+
+  // Show authentication modal if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-linen">
+        <Header />
+        <AuthModal
+          isOpen={true}
+          onAuthenticate={handleAuthenticate}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-linen">
@@ -62,66 +125,53 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-3">
-            {/* Filter Section */}
-            <div className="mb-6">
-              <div className="flex flex-wrap gap-2 mb-4">
-                {wingFilters.map((filter) => (
-                  <Button
-                    key={filter.value}
-                    variant={selectedWing === filter.value ? "default" : "secondary"}
-                    size="sm"
-                    onClick={() => setSelectedWing(filter.value)}
-                    className={
-                      selectedWing === filter.value
-                        ? "bg-maroon text-white hover:bg-maroon/90"
-                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    }
-                  >
-                    {filter.label}
-                  </Button>
-                ))}
-              </div>
-              
-              <div className="flex flex-wrap gap-2">
-                {statusFilters.map((filter) => (
-                  <Button
-                    key={filter.value}
-                    variant={selectedStatus === filter.value ? "default" : "secondary"}
-                    size="sm"
-                    onClick={() => setSelectedStatus(filter.value)}
-                    className={
-                      selectedStatus === filter.value
-                        ? filter.value === "available"
-                          ? "bg-pup-green text-white hover:bg-pup-green/90"
-                          : "bg-pup-red text-white hover:bg-pup-red/90"
-                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    }
-                  >
-                    <div className={`w-2 h-2 rounded-full mr-1 ${
-                      filter.value === "available" ? "bg-pup-green" : "bg-pup-red"
-                    }`}></div>
-                    {filter.label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            {/* Resource Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-              {filteredResources.map((resource) => (
-                <ResourceCard
-                  key={resource.id}
-                  resource={resource}
-                  onReport={handleReport}
-                />
-              ))}
-            </div>
-
-            {/* Campus Map */}
-            <CampusMap 
-              resources={resources}
-              onRoomClick={handleReport}
+            {/* Category Tabs */}
+            <CategoryTabs
+              selectedCategory={selectedCategory}
+              onCategoryChange={(category) => {
+                setSelectedCategory(category);
+                setViewMode("category");
+              }}
             />
+
+            {/* Content based on category and view mode */}
+            {selectedCategory === "room" && viewMode === "category" && (
+              <WingSelector
+                onWingSelect={handleWingSelect}
+                wingStats={wingStats}
+              />
+            )}
+
+            {selectedCategory === "room" && viewMode === "floor" && (
+              <FloorView
+                wing={selectedWing}
+                resources={filteredResources}
+                onBack={handleBackToWings}
+                onReport={handleReport}
+              />
+            )}
+
+            {(selectedCategory === "hall" || selectedCategory === "lagoon_stall") && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                {filteredResources.map((resource) => (
+                  <ResourceCard
+                    key={resource.id}
+                    resource={resource}
+                    onReport={handleReport}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Campus Map - only show for room category */}
+            {selectedCategory === "room" && viewMode === "category" && (
+              <div className="mt-8">
+                <CampusMap 
+                  resources={resources.filter(r => r.category === "room")}
+                  onRoomClick={handleReport}
+                />
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}

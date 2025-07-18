@@ -23,7 +23,8 @@ export function ResourceCard({ resource, onReport }: ResourceCardProps) {
     return `${hours} hours ago`;
   };
 
-  const isAvailable = resource.status === "available";
+  const isAvailable = resource.status === "available" || resource.status === "open";
+  const isPositiveStatus = resource.status === "available" || resource.status === "open";
 
   return (
     <Card className="hover:shadow-md transition-shadow duration-200 border border-gray-200">
@@ -35,13 +36,15 @@ export function ResourceCard({ resource, onReport }: ResourceCardProps) {
           </div>
           <Badge 
             className={`${
-              isAvailable 
+              isPositiveStatus 
                 ? "bg-pup-green hover:bg-pup-green/90 text-white" 
                 : "bg-pup-red hover:bg-pup-red/90 text-white"
             }`}
           >
             <div className="w-2 h-2 rounded-full bg-current mr-1"></div>
-            {isAvailable ? "Available" : "Occupied"}
+            {resource.status === "available" ? "Available" : 
+             resource.status === "occupied" ? "Occupied" :
+             resource.status === "open" ? "Open" : "Closed"}
           </Badge>
         </div>
         
