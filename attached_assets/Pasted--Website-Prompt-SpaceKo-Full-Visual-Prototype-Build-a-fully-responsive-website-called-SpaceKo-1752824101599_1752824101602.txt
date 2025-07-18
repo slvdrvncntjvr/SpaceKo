@@ -1,0 +1,93 @@
+✅ ✨Website Prompt: “SpaceKo” Full Visual Prototype✨
+Build a fully responsive website called “SpaceKo: Campus Resource Locator” using React and Tailwind CSS. This app is designed for students at PUP Main to check and report real-time availability of campus spaces like classrooms, labs, and study areas.
+
+🌈 THEME & VISUALS:
+Use a clean, minimal UI with a warm linen background (#FAF0E6) as the base.
+
+Accent colors:
+
+Maroon (#800000) — for headers, buttons, icons.
+
+Gold (#FFD700) — for highlights, labels, hover states.
+
+Green (#28a745) — to represent “Available”.
+
+Red (#dc3545) — to represent “Occupied”.
+
+Use rounded cards, soft shadows, and a grid layout.
+
+Add subtle hover animations and transitions.
+
+🏠 HOME PAGE STRUCTURE:
+🔺 Top Navbar
+App name: SpaceKo
+
+Small tagline: Empowering PUPians with Real-Time Space Visibility
+
+Navigation buttons (not functional yet): Home | About | Report | Map
+
+Mobile responsive (hamburger menu)
+
+🗂️ Resource Grid Section
+Display a responsive grid of resource cards (classrooms, labs, etc.).
+
+Each card shows:
+
+Room name (e.g., “Room 202”)
+
+Status badge: “Available” (green) or “Occupied” (red)
+
+Last updated timestamp (e.g., “Updated 10 mins ago”)
+
+A “Report Status” button (no actual backend yet — opens a fake modal or toast)
+
+📍 Static Map Section
+Below the resource grid, include a static PNG map (placeholder like pup-map.png) inside a container with a legend:
+
+Green Dot = Available
+
+Red Dot = Occupied
+
+Optional: Add absolute-positioned icons/markers if possible
+
+🧾 “Report Status” Modal (popup or component)
+Simple form:
+
+Dropdown to choose space (Room 101, etc.)
+
+Select status: Available / Occupied
+
+Submit button (just updates mock state for now)
+
+Optional toast: “Thanks for reporting!”
+
+🌟 Sidebar or Section: “Community Spotlight”
+Showcase a few mock users (e.g., "JuanDLC", "Iskolar08") who updated 3+ times today.
+
+Simple card layout with user avatars (random or emojis), update count.
+
+📱 Mobile Responsive Layout:
+Stack layout for smaller screens.
+
+Collapsible nav, full-width cards, static map scales down with padding.
+
+⚙️ Functionality:
+Use mock JSON data to simulate room statuses and updates (e.g., /src/data/mockResources.js).
+
+Clicking “Report” updates the resource status locally (using useState).
+
+No real API or backend required — all frontend mockup.
+
+🧪 Extras (Optional if time allows):
+Show a loading spinner before data loads.
+
+Add filter buttons above the grid (e.g., All | Available | Occupied).
+
+Animate status badge (e.g., pulsing green/red if recently updated).
+
+Scroll-to-top button.
+
+Footer with “Made for Hackathon 2025”.
+
+✅ Summary
+Build a React + Tailwind CSS website named "SpaceKo" for tracking the availability of PUP campus spaces. Use a linen-themed aesthetic (#FAF0E6) with maroon and gold accents. Include a top nav, a grid of space cards (with statuses), a report modal, a static campus map section with a legend, and a sidebar for top contributors. Use mock data only. Make it fully responsive and styled with subtle animations. No backend integration needed yet.
