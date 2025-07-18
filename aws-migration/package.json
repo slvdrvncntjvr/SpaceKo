@@ -1,0 +1,40 @@
+{
+  "name": "spaceko-aws-migration",
+  "version": "1.0.0",
+  "description": "AWS Serverless migration for SpaceKo",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "deploy": "cdk deploy",
+    "destroy": "cdk destroy",
+    "migrate:resources": "tsx migration-scripts/data-migration.ts resources",
+    "migrate:users": "tsx migration-scripts/data-migration.ts users",
+    "migrate:contributors": "tsx migration-scripts/data-migration.ts contributors",
+    "migrate:validate": "tsx migration-scripts/data-migration.ts validate",
+    "migrate:full": "tsx migration-scripts/data-migration.ts full",
+    "docker:build": "docker build -t spaceko-lambda .",
+    "docker:push": "docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/spaceko-lambda:latest",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.450.0",
+    "@aws-sdk/lib-dynamodb": "^3.450.0",
+    "aws-lambda": "^1.0.7",
+    "zod": "^3.22.4",
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.126",
+    "@types/node": "^20.10.0",
+    "@types/pg": "^8.10.9",
+    "aws-cdk": "^2.110.0",
+    "aws-cdk-lib": "^2.110.0",
+    "constructs": "^10.3.0",
+    "jest": "^29.7.0",
+    "tsx": "^4.6.0",
+    "typescript": "^5.3.0"
+  },
+  "keywords": ["aws", "lambda", "dynamodb", "serverless", "campus"],
+  "author": "SpaceKo Team",
+  "license": "MIT"
+}

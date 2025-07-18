@@ -1,0 +1,86 @@
+# AWS CodeBuild buildspec for SpaceKo CI/CD Pipeline
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+      python: 3.11
+    commands:
+      - echo Installing dependencies...
+      - npm install -g aws-cdk
+      - npm install -g typescript
+      - pip install aws-cli
+      
+  pre_build:
+    commands:
+      - echo Pre-build phase started on `date`
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/spaceko-lambda
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+      
+  build:
+    commands:
+      - echo Build started on `date`
+      
+      # Build Frontend
+      - echo Building React frontend...
+      - cd client
+      - npm ci
+      - npm run build
+      - cd ..
+      
+      # Build Lambda Functions
+      - echo Building Lambda functions...
+      - cd aws-migration
+      - npm ci
+      - npm run build
+      
+      # Build Docker image for Lambda
+      - echo Building Docker image...
+      - docker build -t $REPOSITORY_URI:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+      
+      # Deploy infrastructure
+      - echo Deploying CDK stack...
+      - cd infrastructure
+      - npm ci
+      - cdk deploy --require-approval never --outputs-file outputs.json
+      
+  post_build:
+    commands:
+      - echo Post-build phase started on `date`
+      
+      # Push Docker image to ECR
+      - echo Pushing Docker image to ECR...
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      
+      # Update Lambda functions with new image
+      - echo Updating Lambda functions...
+      - aws lambda update-function-code --function-name SpaceKoResourcesFunction --image-uri $REPOSITORY_URI:$IMAGE_TAG
+      - aws lambda update-function-code --function-name SpaceKoUsersFunction --image-uri $REPOSITORY_URI:$IMAGE_TAG
+      
+      # Deploy frontend to S3
+      - echo Deploying frontend to S3...
+      - aws s3 sync ../client/dist s3://$FRONTEND_BUCKET_NAME --delete
+      
+      # Invalidate CloudFront cache
+      - echo Invalidating CloudFront cache...
+      - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
+      
+      - echo Build completed on `date`
+
+artifacts:
+  files:
+    - '**/*'
+  base-directory: '.'
+
+cache:
+  paths:
+    - node_modules/**/*
+    - client/node_modules/**/*
+    - aws-migration/node_modules/**/*
+    - aws-migration/infrastructure/node_modules/**/*
