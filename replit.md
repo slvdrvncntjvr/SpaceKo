@@ -1,0 +1,99 @@
+# SpaceKo: Campus Resource Locator
+
+## Overview
+
+SpaceKo is a full-stack web application designed for PUP Main students to check and report real-time availability of campus resources like classrooms, computer labs, and study areas. The application features a clean, responsive interface with real-time status updates and community-driven reporting functionality.
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## System Architecture
+
+### Frontend Architecture
+- **Framework**: React 18 with TypeScript
+- **Styling**: Tailwind CSS with custom PUP-themed color scheme
+- **UI Components**: Radix UI primitives with shadcn/ui component library
+- **State Management**: React Query (@tanstack/react-query) for server state and local React state for UI
+- **Routing**: Wouter for lightweight client-side routing
+- **Build Tool**: Vite for fast development and optimized production builds
+
+### Backend Architecture
+- **Runtime**: Node.js with Express.js
+- **Language**: TypeScript with ES modules
+- **Database**: PostgreSQL with Drizzle ORM
+- **Database Provider**: Neon Database (@neondatabase/serverless)
+- **Session Management**: Planned with connect-pg-simple for PostgreSQL session store
+- **Development**: In-memory storage implementation for development/testing
+
+### Design System
+- **Theme**: Warm linen background (#FAF0E6) with PUP brand colors
+- **Colors**: Maroon (#800000), Gold (#FFD700), Green (#28a745), Red (#dc3545)
+- **Typography**: Clean, minimal design with rounded cards and soft shadows
+- **Responsive**: Mobile-first approach with hamburger navigation
+
+## Key Components
+
+### Database Schema
+- **Resources Table**: Stores campus room information (name, type, wing, floor, status, last updated)
+- **Contributors Table**: Tracks user engagement and update statistics
+- **Types**: Comprehensive TypeScript types for type safety
+
+### Core Features
+1. **Resource Grid**: Displays real-time availability of campus spaces
+2. **Campus Map**: Visual representation of building layout with status indicators
+3. **Reporting System**: Modal-based interface for status updates
+4. **Community Spotlight**: Highlights top contributors
+5. **Filtering**: By wing (South, North, East, West) and availability status
+
+### UI Components
+- Responsive header with navigation
+- Resource cards with status badges and timestamps
+- Interactive campus map with color-coded availability
+- Report modal with room selection and status updates
+- Community leaderboard component
+
+## Data Flow
+
+1. **Initial Load**: App fetches mock resource data and contributor statistics
+2. **Real-time Updates**: Users can report status changes through modal interface
+3. **State Management**: React Query handles caching and synchronization
+4. **Local Updates**: Optimistic updates for immediate UI feedback
+5. **Filtering**: Client-side filtering by wing and availability status
+
+## External Dependencies
+
+### Core Dependencies
+- **UI Framework**: React ecosystem with TypeScript support
+- **Database**: Drizzle ORM with PostgreSQL dialect
+- **Styling**: Tailwind CSS with PostCSS processing
+- **Components**: Extensive Radix UI component library
+- **Icons**: Lucide React for consistent iconography
+- **Date Handling**: date-fns for timestamp formatting
+
+### Development Dependencies
+- **Build**: Vite with React plugin and TypeScript support
+- **Development**: tsx for TypeScript execution
+- **Database**: Drizzle Kit for schema management and migrations
+- **Validation**: Zod with Drizzle integration for type-safe schemas
+
+## Deployment Strategy
+
+### Build Process
+- **Frontend**: Vite builds optimized static assets to `dist/public`
+- **Backend**: esbuild bundles server code to `dist/index.js`
+- **Database**: Drizzle migrations in `migrations/` directory
+
+### Environment Setup
+- **Development**: Local development with `tsx` and Vite dev server
+- **Production**: Node.js server serving built static files
+- **Database**: PostgreSQL connection via DATABASE_URL environment variable
+
+### Scripts
+- `npm run dev`: Development mode with hot reloading
+- `npm run build`: Production build for both frontend and backend
+- `npm run start`: Production server startup
+- `npm run db:push`: Push schema changes to database
+
+### Current State
+The application is currently using mock data for development. The backend routes are placeholder implementations, and the database schema is defined but not fully integrated. The frontend is fully functional with mock data and ready for backend integration.
