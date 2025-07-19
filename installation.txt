@@ -1,0 +1,201 @@
+STREAMLINED SPACEKO SETUP GUIDE FOR WINDOWS
+==========================================
+
+PREREQUISITES (3 minutes)
+=========================
+
+1. Node.js 18+ - Download from nodejs.org, install with defaults
+2. VS Code - Download from code.visualstudio.com  
+3. PostgreSQL - Download from postgresql.org (REMEMBER THE PASSWORD!)
+
+SETUP STEPS (2 minutes)
+=======================
+
+METHOD 1: AUTOMATED SETUP (RECOMMENDED)
+---------------------------------------
+1. Extract SpaceKo zip file to any folder
+2. Open the folder in VS Code (File → Open Folder)
+3. Open PowerShell terminal in VS Code (Terminal → New Terminal)
+4. Run: .\setup.bat
+5. Enter your PostgreSQL password when prompted
+6. Wait for "serving on port 5000" message
+7. Open http://localhost:5000 in your browser
+
+METHOD 2: MANUAL SETUP
+---------------------
+1. Extract and open project in VS Code
+2. Open terminal and run these commands:
+
+npm install
+echo DATABASE_URL=postgresql://postgres:YOUR_PG_PASSWORD@localhost:5432/spaceko_dev > .env
+echo NODE_ENV=development >> .env  
+echo PORT=5000 >> .env
+npm run db:push
+npm run dev
+
+3. Replace YOUR_PG_PASSWORD with your actual PostgreSQL password
+4. Open http://localhost:5000
+
+THAT'S IT!
+=========
+
+Your SpaceKo app should now be running at http://localhost:5000
+
+WHAT WAS WRONG WITH THE ORIGINAL GUIDE:
+======================================
+
+1. ❌ WRONG: Used Linux commands (NODE_ENV=development) on Windows
+   ✅ FIXED: Used Windows-compatible commands (set NODE_ENV=development)
+
+2. ❌ WRONG: Missing .env file creation
+   ✅ FIXED: Automated .env file creation with correct format
+
+3. ❌ WRONG: Complicated database setup with multiple options
+   ✅ FIXED: Single PostgreSQL setup path
+
+4. ❌ WRONG: Too many unnecessary steps and extensions
+   ✅ FIXED: Minimal essential steps only
+
+5. ❌ WRONG: No error handling for database connection
+   ✅ FIXED: Clear password prompt and database creation
+
+TROUBLESHOOTING:
+===============
+
+Error: "password authentication failed"
+→ Run setup.bat again with correct PostgreSQL password
+
+Error: "PORT 5000 already in use"  
+→ Change PORT=5001 in .env file
+
+Error: "Cannot find module"
+→ Delete node_modules folder, run npm install again
+
+Project Structure:
+- client/ → React frontend
+- server/ → Node.js backend  
+- shared/ → Database schema
+- .env → Environment configuration (created by setup)
+
+Common Development Commands:
+---------------------------
+npm run dev        - Start development server
+npm run build      - Build for production
+npm run db:push    - Update database schema
+npm run check      - Check TypeScript errors
+
+STEP 10: TESTING AND DEBUGGING
+==============================
+
+Database Inspection:
+--------------------
+1. Install a PostgreSQL GUI tool like pgAdmin or DBeaver
+2. Connect using your database credentials
+3. Browse tables and data
+
+API Testing:
+-----------
+1. Use Thunder Client extension in VS Code
+2. Test API endpoints like:
+   GET http://localhost:5000/api/resources
+   POST http://localhost:5000/api/auth/login
+
+Browser Developer Tools:
+-----------------------
+1. Open browser Developer Tools (F12)
+2. Check Console for JavaScript errors
+3. Use Network tab to monitor API calls
+
+COMMON ISSUES AND SOLUTIONS
+===========================
+
+Issue: "npm install" fails
+Solution: 
+- Delete node_modules folder and package-lock.json
+- Run "npm install" again
+- Check Node.js version (should be 18+)
+
+Issue: Database connection error
+Solution:
+- Verify PostgreSQL is running
+- Check DATABASE_URL in .env file
+- Ensure database exists and credentials are correct
+
+Issue: Port 5000 already in use
+Solution:
+- Change PORT in .env file to 3001 or another available port
+- Or stop other applications using port 5000
+
+Issue: "Cannot find module" errors
+Solution:
+- Run "npm install" to ensure all dependencies are installed
+- Check if file paths in import statements are correct
+
+Issue: TypeScript errors
+Solution:
+- Run "npm run check" to see all TypeScript errors
+- Fix import paths and type issues
+- Restart VS Code if IntelliSense isn't working
+
+PRODUCTION DEPLOYMENT PREPARATION
+=================================
+
+When ready to deploy:
+1. Run "npm run build" to create production files
+2. Test the production build locally
+3. Set up proper environment variables for production
+4. Consider using the AWS migration plan for serverless deployment
+
+VS CODE PRODUCTIVITY TIPS
+=========================
+
+Keyboard Shortcuts:
+------------------
+Ctrl+P (Cmd+P)     - Quick file search
+Ctrl+Shift+P       - Command palette
+Ctrl+`             - Toggle terminal
+Ctrl+B             - Toggle sidebar
+F5                 - Start debugging
+
+Useful Features:
+---------------
+- Multi-cursor editing (Alt+Click)
+- Code folding (click arrows next to line numbers)
+- Integrated Git support
+- Built-in terminal
+- IntelliSense for code completion
+
+File Management:
+---------------
+- Use the Explorer panel to navigate files
+- Right-click for context menus
+- Drag and drop to move files
+- Use search (Ctrl+Shift+F) to find code across files
+
+NEXT STEPS
+==========
+
+1. Familiarize yourself with the codebase structure
+2. Try making small changes to see how the app responds
+3. Read through the shared/schema.ts file to understand the data model
+4. Explore the client/src/pages/ to see how different pages work
+5. Check the server/routes.ts to understand the API structure
+
+For advanced deployment or AWS migration, refer to the files in the aws-migration/ folder.
+
+SUPPORT AND RESOURCES
+=====================
+
+Documentation:
+- React: https://react.dev/
+- TypeScript: https://www.typescriptlang.org/docs/
+- Tailwind CSS: https://tailwindcss.com/docs
+- Drizzle ORM: https://orm.drizzle.team/docs
+
+If you encounter issues:
+1. Check the browser console for errors
+2. Look at the VS Code terminal for server errors
+3. Verify all environment variables are set correctly
+4. Ensure database is running and accessible
+
+Happy coding with SpaceKo!
