@@ -22,6 +22,6 @@ call npm run db:push
 echo.
 echo STEP 4: Start the development server
 echo.
-echo Starting SpaceKo... Open http://localhost:5000 in your browser
+echo Starting SpaceKo... Open http://localhost:3000 in your browser
 echo.
 call npm run dev
