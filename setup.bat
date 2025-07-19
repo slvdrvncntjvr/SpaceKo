@@ -14,7 +14,23 @@ echo PORT=5000 >> .env
 echo.
 echo STEP 2: Create database if it doesn't exist
 echo.
-psql -U postgres -c "CREATE DATABASE spaceko_dev;" 2>nul
+
+REM Try different common PostgreSQL installation paths
+set "PSQL_PATH="
+if exist "C:\Program Files\PostgreSQL\17\bin\psql.exe" (
+    set "PSQL_PATH=C:\Program Files\PostgreSQL\17\bin\psql.exe"
+) else if exist "C:\Program Files\PostgreSQL\16\bin\psql.exe" (
+    set "PSQL_PATH=C:\Program Files\PostgreSQL\16\bin\psql.exe"
+) else if exist "C:\Program Files (x86)\PostgreSQL\17\bin\psql.exe" (
+    set "PSQL_PATH=C:\Program Files (x86)\PostgreSQL\17\bin\psql.exe"
+) else if exist "C:\Program Files (x86)\PostgreSQL\16\bin\psql.exe" (
+    set "PSQL_PATH=C:\Program Files (x86)\PostgreSQL\16\bin\psql.exe"
+) else (
+    echo PostgreSQL not found. Trying system PATH...
+    set "PSQL_PATH=psql"
+)
+
+"%PSQL_PATH%" -U postgres -c "CREATE DATABASE spaceko_dev;" 2>nul
 echo Database created (or already exists)
 echo.
 echo STEP 3: Push database schema
