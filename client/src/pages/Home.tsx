@@ -62,7 +62,8 @@ export default function Home() {
 
   const handleCreateUser = (userData: any) => {
     // In a real app, this would send to backend
-    console.log("Created new user:", userData);
+    // Log user creation for development
+    // In production, this should be sent to analytics service
     // For demo purposes, show success message or handle as needed
   };
 

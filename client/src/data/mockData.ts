@@ -37,13 +37,18 @@ export const generateMockResources = (): Resource[] => {
         resources.push({
           id,
           name,
-          type,
-          wing,
-          floor,
-          room: roomCode,
-          status,
+          type: type as string,
+          status: status as string,
+          category: type as string,
+          wing: wing as string,
+          floor: floor as number,
+          room: roomCode as string,
           lastUpdated,
-          updatedBy: Math.random() > 0.5 ? `user${Math.floor(Math.random() * 100)}` : null
+          updatedBy: Math.random() > 0.5 ? `user${Math.floor(Math.random() * 100)}` : null,
+          verifiedBy: null,
+          verifiedAt: null,
+          ownedBy: null,
+          stallNumber: null
         });
         
         id++;
@@ -57,25 +62,33 @@ export const generateMockResources = (): Resource[] => {
 export const mockContributors: Contributor[] = [
   {
     id: 1,
+    userCode: "JuanDLC001",
     username: "JuanDLC",
+    userType: "student",
     updateCount: 5,
     lastActive: new Date(Date.now() - 10 * 60 * 1000) // 10 minutes ago
   },
   {
     id: 2,
+    userCode: "Iskolar08",
     username: "Iskolar08", 
+    userType: "student",
     updateCount: 4,
     lastActive: new Date(Date.now() - 15 * 60 * 1000) // 15 minutes ago
   },
   {
     id: 3,
+    userCode: "MaryRose",
     username: "MaryRose",
+    userType: "faculty",
     updateCount: 3,
     lastActive: new Date(Date.now() - 20 * 60 * 1000) // 20 minutes ago
   },
   {
     id: 4,
+    userCode: "TechNinja",
     username: "TechNinja",
+    userType: "admin",
     updateCount: 2,
     lastActive: new Date(Date.now() - 25 * 60 * 1000) // 25 minutes ago
   }
