@@ -80,11 +80,11 @@ services:
     environment:
       POSTGRES_DB: spaceko_prod
       POSTGRES_USER: spaceko_user
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_PASSWORD: spaceko_password_2025
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
     
     # Security
-    user: "999:999"
+    user: "postgres"
     security_opt:
       - no-new-privileges:true
     
@@ -160,7 +160,7 @@ services:
     restart: unless-stopped
     
     # Command with authentication
-    command: redis-server --requirepass ${REDIS_PASSWORD} --maxmemory 64mb --maxmemory-policy allkeys-lru
+    command: redis-server --requirepass redis_secure_2025 --maxmemory 64mb --maxmemory-policy allkeys-lru
     
     # Security
     user: "999:999"
