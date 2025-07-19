@@ -3,7 +3,6 @@ echo ================================================
 echo SPACEKO WINDOWS SETUP SCRIPT
 echo ================================================
 echo.
-echo This script will help you set up SpaceKo locally.
 echo.
 echo STEP 1: Update the .env file with your PostgreSQL password
 echo.
