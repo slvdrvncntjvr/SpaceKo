@@ -173,12 +173,159 @@ export async function registerRoutes(app: Express): Promise<Server> {
         data: resources,
         total: resources.length,
         timestamp: new Date().toISOString(),
+        version: resources.length, // Simple versioning
       });
     } catch (error) {
       logger.error('Error fetching resources', { error, user: req.user?.userCode });
       res.status(500).json({
         error: 'Failed to fetch resources',
         code: 'FETCH_ERROR'
+      });
+    }
+  });
+
+  // Bulk update endpoint for efficient state synchronization
+  app.post('/api/resources/sync', authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const { resources: clientResources, clientVersion } = req.body;
+      
+      if (!Array.isArray(clientResources)) {
+        return res.status(400).json({ error: 'Invalid resources data' });
+      }
+
+      // Get current server resources
+      const serverResources = await storage.getResources();
+      const serverVersion = serverResources.length; // Simple versioning
+      
+      // If client is outdated, send server data
+      if (clientVersion < serverVersion) {
+        logger.info('Client sync - server data newer', {
+          userCode: req.user?.userCode,
+          clientVersion,
+          serverVersion
+        });
+        
+        return res.json({
+          success: true,
+          action: 'server_wins',
+          data: serverResources,
+          version: serverVersion,
+          timestamp: new Date().toISOString(),
+        });
+      }
+      
+      // If client has newer data, process updates
+      if (clientVersion > serverVersion) {
+        logger.info('Client sync - processing client updates', {
+          userCode: req.user?.userCode,
+          clientVersion,
+          serverVersion
+        });
+        
+        // For now, return current server state
+        // In production, implement proper conflict resolution
+        return res.json({
+          success: true,
+          action: 'conflict_detected',
+          data: serverResources,
+          version: serverVersion,
+          timestamp: new Date().toISOString(),
+        });
+      }
+      
+      // Versions match - no sync needed
+      res.json({
+        success: true,
+        action: 'no_changes',
+        version: serverVersion,
+        timestamp: new Date().toISOString(),
+      });
+      
+    } catch (error) {
+      logger.error('Error syncing resources', { error, user: req.user?.userCode });
+      res.status(500).json({
+        error: 'Failed to sync resources',
+        code: 'SYNC_ERROR'
+      });
+    }
+  });
+
+  // Quick status update endpoint for real-time updates
+  app.patch('/api/resources/:name/status', authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const resourceName = req.params.name;
+      const { status } = req.body;
+      
+      // Validate status
+      const validStatuses = ['available', 'occupied', 'open', 'closed'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ 
+          error: 'Invalid status value',
+          validStatuses 
+        });
+      }
+
+      // Find resource by name
+      const resources = await storage.getResources();
+      const resource = resources.find(r => r.name === resourceName);
+      
+      if (!resource) {
+        return res.status(404).json({ error: 'Resource not found' });
+      }
+
+      // Check permissions
+      const user = req.user!;
+      const canUpdate = checkResourceUpdatePermission(user, resource);
+      
+      if (!canUpdate.allowed) {
+        logger.warn('Unauthorized status update attempt', {
+          userCode: user.userCode,
+          userType: user.userType,
+          resourceName: resourceName,
+          reason: canUpdate.reason
+        });
+        
+        return res.status(403).json({
+          error: canUpdate.reason,
+          code: 'INSUFFICIENT_PERMISSIONS'
+        });
+      }
+
+      // Update resource status
+      const updatedResource = await storage.updateResource(resource.id, {
+        status,
+        updatedBy: user.userCode,
+        lastUpdated: new Date(),
+      });
+
+      if (!updatedResource) {
+        return res.status(500).json({ error: 'Failed to update resource' });
+      }
+
+      logger.info('Resource status updated', {
+        userCode: user.userCode,
+        resourceName: resourceName,
+        oldStatus: resource.status,
+        newStatus: status,
+        timestamp: new Date().toISOString()
+      });
+
+      res.json({
+        success: true,
+        data: updatedResource,
+        message: `${resourceName} status updated to ${status}`,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      logger.error('Error updating resource status', { 
+        error, 
+        resourceName: req.params.name,
+        user: req.user?.userCode 
+      });
+      res.status(500).json({
+        error: 'Failed to update resource status',
+        code: 'UPDATE_ERROR'
       });
     }
   });

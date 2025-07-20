@@ -13,7 +13,7 @@ services:
     
     # Environment variables (use .env.production file)
     env_file:
-      - .env.production
+      - .env.production.docker
     
     # Ports
     ports:

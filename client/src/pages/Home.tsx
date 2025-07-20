@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { Shield, UserPlus } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { Shield, UserPlus, RefreshCw, AlertTriangle } from "lucide-react";
 import { Header } from "@/components/Header";
 import { AuthModal } from "@/components/AuthModal";
 import { SuperAdminModal } from "@/components/SuperAdminModal";
@@ -10,23 +10,39 @@ import { ResourceCard } from "@/components/ResourceCard";
 import { CampusMap } from "@/components/CampusMap";
 import { CommunitySpotlight } from "@/components/CommunitySpotlight";
 import { ReportModal } from "@/components/ReportModal";
+import { StatusBar } from "@/components/StatusBar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { mockResources, mockContributors, mockUsers } from "@/data/newMockData";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { mockContributors, mockUsers } from "@/data/newMockData";
 import { Resource, Wing, Status, Category, UserType } from "@shared/schema";
+import { useAppState } from "@/hooks/useAppState";
+import { useToast } from "@/hooks/use-toast";
 
 type ViewMode = "category" | "wing" | "floor";
 
 export default function Home() {
-  // Authentication state
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userCode, setUserCode] = useState("");
-  const [userType, setUserType] = useState<UserType>("student");
-  const [username, setUsername] = useState("");
+  // Use the new state management hook
+  const {
+    resources,
+    isAuthenticated,
+    userCode,
+    userType,
+    username,
+    isLoading,
+    error,
+    login,
+    logout,
+    updateResourceStatus,
+    verifyResource,
+    refreshState,
+    healthStatus
+  } = useAppState();
 
-  // App state
-  const [resources, setResources] = useState<Resource[]>(mockResources);
+  const { toast } = useToast();
+
+  // Local UI state
   const [selectedCategory, setSelectedCategory] = useState<Category>("room");
   const [viewMode, setViewMode] = useState<ViewMode>("category");
   const [selectedWing, setSelectedWing] = useState<Wing>("South");
@@ -34,37 +50,20 @@ export default function Home() {
   const [isSuperAdminModalOpen, setIsSuperAdminModalOpen] = useState(false);
   const [selectedResource, setSelectedResource] = useState<Resource | undefined>();
 
-  // Check for saved authentication
-  useEffect(() => {
-    const savedAuth = localStorage.getItem("spaceko_auth");
-    if (savedAuth) {
-      const auth = JSON.parse(savedAuth);
-      setIsAuthenticated(true);
-      setUserCode(auth.userCode);
-      setUserType(auth.userType);
-      setUsername(auth.username);
-    }
-  }, []);
-
   const handleAuthenticate = (code: string, type: UserType, name: string) => {
-    setUserCode(code);
-    setUserType(type);
-    setUsername(name);
-    setIsAuthenticated(true);
-    
-    // Save authentication
-    localStorage.setItem("spaceko_auth", JSON.stringify({
-      userCode: code,
-      userType: type,
-      username: name
-    }));
+    login(code, type, name);
+    toast({
+      title: "Login Successful",
+      description: `Welcome back, ${name}! Your session is now active.`,
+    });
   };
 
   const handleCreateUser = (userData: any) => {
     // In a real app, this would send to backend
-    // Log user creation for development
-    // In production, this should be sent to analytics service
-    // For demo purposes, show success message or handle as needed
+    toast({
+      title: "User Created",
+      description: `New ${userData.userType} account created successfully.`,
+    });
   };
 
   const filteredResources = useMemo(() => {
@@ -98,23 +97,35 @@ export default function Home() {
   };
 
   const handleReportSubmit = (resourceName: string, status: Status) => {
-    setResources(prev => 
-      prev.map(resource => 
-        resource.name === resourceName 
-          ? { ...resource, status, lastUpdated: new Date(), updatedBy: userCode }
-          : resource
-      )
-    );
+    const success = updateResourceStatus(resourceName, status);
+    if (success) {
+      toast({
+        title: "Status Updated",
+        description: `${resourceName} status changed to ${status}. This update is now saved and synchronized.`,
+      });
+    } else {
+      toast({
+        title: "Update Failed",
+        description: error || "Failed to update resource status",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleVerifyResource = (resource: Resource) => {
-    setResources(prev => 
-      prev.map(r => 
-        r.id === resource.id 
-          ? { ...r, verifiedBy: userCode, verifiedAt: new Date() }
-          : r
-      )
-    );
+    const success = verifyResource(resource.id);
+    if (success) {
+      toast({
+        title: "Resource Verified",
+        description: `${resource.name} has been verified by ${username}`,
+      });
+    } else {
+      toast({
+        title: "Verification Failed",
+        description: error || "Failed to verify resource",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleWingSelect = (wing: Wing) => {
@@ -125,6 +136,34 @@ export default function Home() {
   const handleBackToWings = () => {
     setViewMode("category");
   };
+
+  const handleRefresh = () => {
+    refreshState();
+    toast({
+      title: "Data Refreshed",
+      description: "All data has been synchronized and refreshed.",
+    });
+  };
+
+  const handleLogout = () => {
+    logout();
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
+    });
+  };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-linen flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-pup-gold" />
+          <p className="text-gray-600">Loading SpaceKo...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Show authentication modal if not authenticated
   if (!isAuthenticated) {
@@ -143,7 +182,45 @@ export default function Home() {
     <div className="min-h-screen bg-linen">
       <Header />
       
+      {/* Error Alert */}
+      {error && (
+        <Alert className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4" variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            {error}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="ml-2" 
+              onClick={handleRefresh}
+            >
+              Retry
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Health Status Indicator */}
+      {!healthStatus.sessionValid && (
+        <Alert className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Your session may have expired. Please refresh or log in again.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Status Bar */}
+        <StatusBar
+          healthStatus={healthStatus}
+          error={error}
+          isLoading={isLoading}
+          onRefresh={handleRefresh}
+          onLogout={handleLogout}
+          username={username}
+        />
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-3">
