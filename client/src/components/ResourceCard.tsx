@@ -4,16 +4,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Resource, UserType } from "@shared/schema";
 import { validateUserAction } from "@/utils/permissions";
+import { useResourceContext } from "@/context/ResourceContext";
 
 interface ResourceCardProps {
   resource: Resource;
   onReport: (resource: Resource) => void;
-  userType: UserType;
-  userCode: string;
   onVerify?: (resource: Resource) => void;
 }
 
-export function ResourceCard({ resource, onReport, userType, userCode, onVerify }: ResourceCardProps) {
+export function ResourceCard({ resource, onReport, onVerify }: ResourceCardProps) {
+  const { userType, userCode, updateResource, verifyResource } = useResourceContext();
   const getTimeAgo = (date: Date) => {
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
@@ -29,9 +29,9 @@ export function ResourceCard({ resource, onReport, userType, userCode, onVerify 
 
   const isAvailable = resource.status === "available" || resource.status === "open";
   const isPositiveStatus = resource.status === "available" || resource.status === "open";
-  const canUpdate = validateUserAction(userType, userCode, "update", resource).allowed;
-  const canVerify = validateUserAction(userType, userCode, "verify", resource).allowed;
-  const isOwned = resource.ownedBy === userCode;
+  const canUpdate = userType && userCode ? validateUserAction(userType, userCode, "update", resource).allowed : false;
+  const canVerify = userType && userCode ? validateUserAction(userType, userCode, "verify", resource).allowed : false;
+  const isOwned = userCode ? resource.ownedBy === userCode : false;
 
   return (
     <Card className={`hover:shadow-md transition-shadow duration-200 border ${
