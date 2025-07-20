@@ -1,0 +1,205 @@
+version: '3.8'
+
+services:
+  # SpaceKo Application
+  spaceko-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: spaceko:latest
+    container_name: spaceko-app
+    restart: unless-stopped
+    
+    # Environment variables (use .env.production file)
+    env_file:
+      - .env.production.docker
+    
+    # Ports
+    ports:
+      - "5000:5000"
+    
+    # Security
+    user: "1001:1001"
+    read_only: true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # Volumes for logs (read-only root filesystem)
+    volumes:
+      - spaceko-logs:/app/logs
+      - spaceko-tmp:/tmp
+    
+    # Dependencies
+    depends_on:
+      spaceko-db:
+        condition: service_healthy
+    
+    # Networks
+    networks:
+      - spaceko-network
+    
+    # Logging
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # PostgreSQL Database
+  spaceko-db:
+    image: postgres:15-alpine
+    container_name: spaceko-db
+    restart: unless-stopped
+    
+    # Environment
+    environment:
+      POSTGRES_DB: spaceko_prod
+      POSTGRES_USER: spaceko_user
+      POSTGRES_PASSWORD: spaceko_password_2025
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    
+    # Security
+    user: "postgres"
+    security_opt:
+      - no-new-privileges:true
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+    
+    # Volumes
+    volumes:
+      - spaceko-db-data:/var/lib/postgresql/data
+    
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U spaceko_user -d spaceko_prod"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    
+    # Networks
+    networks:
+      - spaceko-network
+    
+    # Logging
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Nginx Reverse Proxy (Optional but recommended)
+  spaceko-nginx:
+    image: nginx:alpine
+    container_name: spaceko-nginx
+    restart: unless-stopped
+    
+    # Ports
+    ports:
+      - "80:80"
+      - "443:443"
+    
+    # Security
+    security_opt:
+      - no-new-privileges:true
+    
+    # Volumes
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - spaceko-nginx-logs:/var/log/nginx
+    
+    # Dependencies
+    depends_on:
+      - spaceko-app
+    
+    # Networks
+    networks:
+      - spaceko-network
+    
+    # Logging
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Redis for Session Management (Optional)
+  spaceko-redis:
+    image: redis:7-alpine
+    container_name: spaceko-redis
+    restart: unless-stopped
+    
+    # Command with authentication
+    command: redis-server --requirepass redis_secure_2025 --maxmemory 64mb --maxmemory-policy allkeys-lru
+    
+    # Security
+    user: "999:999"
+    security_opt:
+      - no-new-privileges:true
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: '0.1'
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    
+    # Networks
+    networks:
+      - spaceko-network
+
+# Volumes
+volumes:
+  spaceko-db-data:
+    driver: local
+  spaceko-logs:
+    driver: local
+  spaceko-tmp:
+    driver: local
+  spaceko-nginx-logs:
+    driver: local
+
+# Networks
+networks:
+  spaceko-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

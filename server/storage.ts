@@ -4,8 +4,29 @@ import {
   type Contributor, 
   type InsertContributor,
   type Session,
-  type InsertSession
+  type InsertSession,
+  insertResourceSchema,
+  insertContributorSchema,
+  insertSessionSchema
 } from "@shared/schema";
+import { z } from "zod";
+
+// Input validation schemas
+const userCodeSchema = z.string().min(1).max(50);
+const idSchema = z.number().int().positive();
+const categorySchema = z.enum(["room", "hall", "lagoon_stall", "service"]);
+const wingSchema = z.enum(["South", "North", "East", "West"]);
+
+function validateInput<T>(schema: z.ZodSchema<T>, data: unknown): T {
+  try {
+    return schema.parse(data);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new Error(`Validation failed: ${error.errors.map(e => e.message).join(', ')}`);
+    }
+    throw error;
+  }
+}
 
 export interface IStorage {
   // Resources
@@ -59,6 +80,7 @@ export class MemStorage implements IStorage {
   }
 
   async getResourceById(id: number): Promise<Resource | undefined> {
+    validateInput(idSchema, id);
     return this.resources.get(id);
   }
 

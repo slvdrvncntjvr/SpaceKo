@@ -187,7 +187,7 @@ export function logUserAction(userCode: string, userType: UserType, action: stri
   };
 
   // In a real application, this would be sent to a secure backend endpoint
-  console.log("AUDIT LOG:", logEntry);
+  // For development, we'll use a proper logging mechanism
   
   // Store locally for development/demo purposes
   const existingLogs = JSON.parse(localStorage.getItem("spaceko_audit_logs") || "[]");
