@@ -7,6 +7,34 @@ import {
   type InsertSession
 } from "@shared/schema";
 
+// Memory storage specific interfaces
+interface MemoryInsertResource {
+  name: string;
+  type: string;
+  category: string;
+  wing?: string | null;
+  floor?: number | null;
+  room?: string | null;
+  status: string;
+  updatedBy?: string | null;
+  verifiedBy?: string | null;
+  ownedBy?: string | null;
+  stallNumber?: number | null;
+}
+
+interface MemoryInsertContributor {
+  userCode: string;
+  username: string;
+  userType: string;
+  updateCount?: number;
+}
+
+interface MemoryInsertSession {
+  userCode: string;
+  userType: string;
+  username: string;
+}
+
 export interface IStorage {
   // Resources
   getResources(): Promise<Resource[]>;
@@ -14,17 +42,17 @@ export interface IStorage {
   getResourcesByCategory(category: string): Promise<Resource[]>;
   getResourcesByWing(wing: string): Promise<Resource[]>;
   getResourcesByWingAndFloor(wing: string, floor: number): Promise<Resource[]>;
-  createResource(resource: InsertResource): Promise<Resource>;
+  createResource(resource: MemoryInsertResource): Promise<Resource>;
   updateResource(id: number, updates: Partial<Resource>): Promise<Resource | undefined>;
   
   // Contributors
   getContributors(): Promise<Contributor[]>;
   getContributorByUsername(username: string): Promise<Contributor | undefined>;
-  createContributor(contributor: InsertContributor): Promise<Contributor>;
+  createContributor(contributor: MemoryInsertContributor): Promise<Contributor>;
   updateContributor(id: number, updates: Partial<Contributor>): Promise<Contributor | undefined>;
   
   // Sessions
-  createSession(session: InsertSession): Promise<Session>;
+  createSession(session: MemoryInsertSession): Promise<Session>;
   getSessionByUserCode(userCode: string): Promise<Session | undefined>;
   validateUserCode(userCode: string): Promise<boolean>;
 }
@@ -44,13 +72,83 @@ export class MemStorage implements IStorage {
     this.resourceId = 1;
     this.contributorId = 1;
     this.sessionId = 1;
-    
-    // Initialize with sample data
+
     this.initializeSampleData();
   }
 
   private initializeSampleData() {
-    // Sample resources will be added here
+    // Sample resources
+    this.createResource({
+      name: "S506",
+      type: "Computer Lab",
+      category: "room",
+      wing: "South",
+      floor: 5,
+      room: "06",
+      status: "available",
+      updatedBy: "admin"
+    });
+
+    this.createResource({
+      name: "N312",
+      type: "Lecture Hall",
+      category: "room",
+      wing: "North",
+      floor: 3,
+      room: "12",
+      status: "occupied",
+      updatedBy: "student"
+    });
+
+    this.createResource({
+      name: "E201",
+      type: "Study Area",
+      category: "room",
+      wing: "East",
+      floor: 2,
+      room: "01",
+      status: "open",
+      updatedBy: "admin"
+    });
+
+    this.createResource({
+      name: "Main Hall",
+      type: "Conference Hall",
+      category: "hall",
+      status: "available",
+      updatedBy: "admin"
+    });
+
+    this.createResource({
+      name: "Lagoon Stall 1",
+      type: "Food Stall",
+      category: "lagoon_stall",
+      status: "open",
+      ownedBy: "employee1",
+      stallNumber: 1
+    });
+
+    // Sample contributors
+    this.createContributor({
+      userCode: "2023-1234",
+      username: "john_doe",
+      userType: "student",
+      updateCount: 5
+    });
+
+    this.createContributor({
+      userCode: "PUP01-5678",
+      username: "admin_user",
+      userType: "admin",
+      updateCount: 12
+    });
+
+    this.createContributor({
+      userCode: "EMP01-9999",
+      username: "employee_user",
+      userType: "lagoon_employee",
+      updateCount: 8
+    });
   }
 
   // Resource methods
@@ -74,7 +172,7 @@ export class MemStorage implements IStorage {
     return Array.from(this.resources.values()).filter(r => r.wing === wing && r.floor === floor);
   }
 
-  async createResource(insertResource: InsertResource): Promise<Resource> {
+  async createResource(insertResource: MemoryInsertResource): Promise<Resource> {
     const id = this.resourceId++;
     const resource: Resource = { 
       ...insertResource, 
@@ -115,7 +213,7 @@ export class MemStorage implements IStorage {
     return Array.from(this.contributors.values()).find(c => c.username === username);
   }
 
-  async createContributor(insertContributor: InsertContributor): Promise<Contributor> {
+  async createContributor(insertContributor: MemoryInsertContributor): Promise<Contributor> {
     const id = this.contributorId++;
     const contributor: Contributor = { 
       ...insertContributor, 
@@ -141,7 +239,7 @@ export class MemStorage implements IStorage {
   }
 
   // Session methods
-  async createSession(insertSession: InsertSession): Promise<Session> {
+  async createSession(insertSession: MemoryInsertSession): Promise<Session> {
     const id = this.sessionId++;
     const session: Session = { 
       ...insertSession, 
@@ -157,7 +255,6 @@ export class MemStorage implements IStorage {
   }
 
   async validateUserCode(userCode: string): Promise<boolean> {
-    // Simple validation logic
     const studentPattern = /^20\d{2}-\d{4}$/;
     const adminPattern = /^PUP\d{2}-\d{4}$/;
     const employeePattern = /^EMP\d{2}-\d{4}$/;
