@@ -71,9 +71,30 @@ export function serveStatic(app: Express) {
   const distPath = path.resolve(import.meta.dirname, "public");
 
   if (!fs.existsSync(distPath)) {
-    throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`,
-    );
+    // If build directory doesn't exist, create a simple fallback
+    console.warn(`Build directory not found: ${distPath}`);
+    console.warn("Creating simple fallback for development...");
+    
+    // Create a simple API-only response for missing client
+    app.use("*", (req, res) => {
+      if (req.path.startsWith("/api")) {
+        // Let API routes handle this
+        res.status(404).json({ error: "API endpoint not found" });
+      } else {
+        // Return a simple message for non-API routes
+        res.status(200).json({ 
+          message: "SpaceKo Backend is running!",
+          note: "Client not built yet. Use /api/* endpoints for API access.",
+          endpoints: [
+            "GET /api/health",
+            "GET /api/resources", 
+            "GET /api/users",
+            "POST /api/auth/login"
+          ]
+        });
+      }
+    });
+    return;
   }
 
   app.use(express.static(distPath));

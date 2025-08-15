@@ -25,7 +25,7 @@ export function Header() {
               />
               <div>
                 <p className="text-xs text-gray-600 hidden sm:block">
-                  Empowering PUPians with Real-Time Space Visibility
+                  Your Space. Your Time. Your Way.
                 </p>
               </div>
             </div>
