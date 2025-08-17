@@ -194,7 +194,7 @@ export default function Home() {
             {selectedCategory === "room" && viewMode === "category" && (
               <div className="mt-8">
                 <CampusMap 
-                  resources={resources.filter(r => r.category === "room")}
+                  resources={resources}
                   onRoomClick={handleReport}
                 />
               </div>
